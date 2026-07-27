@@ -12,7 +12,7 @@ building LLM-powered agents — this project covers the full pipeline
 from raw data to a deployed, working tool: EDA → model training →
 evaluation → explainability → backend API → frontend → deployment.
 
-**[Live demo →](#)** *(link added once Step 7 deployment is complete)*
+**[Live demo →](#)** *TBA*
 
 ---
 
