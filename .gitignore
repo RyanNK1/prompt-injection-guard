@@ -17,6 +17,9 @@ frontend/dist/
 data/suggestions.db
 Kaggle Dataset/
 
+# --- Personal working notes, not meant for the public repo ---
+notebooks/notes/
+
 # --- OS / editor cruft ---
 .DS_Store
 .vscode/
