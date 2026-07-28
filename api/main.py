@@ -65,12 +65,36 @@ ALLOWED_ORIGINS = os.environ.get("ALLOWED_ORIGINS", "*").split(",")
 # decision in this file -- loading a joblib model from disk on every
 # request would add real latency and I/O load for no benefit, since
 # none of these artifacts change while the server is running.
+#
+# Each step below prints progress with flush=True. Python buffers stdout
+# by default when not attached to a terminal (as on Render) -- without
+# an explicit flush, none of these prints would appear in the deploy
+# logs until the buffer filled or the process exited, making a slow or
+# hanging step look like total silence. This is purely diagnostic (it
+# doesn't change behavior) but is what actually lets us see where time
+# goes on a real deploy instead of debugging blind.
 # ------------------------------------------------------------------
-nb_model = joblib.load(MODELS_DIR / "nb_baseline.joblib")
-vectorizer = joblib.load(MODELS_DIR / "tfidf_vectorizer.joblib")
-taxonomy_vectorizer = joblib.load(MODELS_DIR / "taxonomy_vectorizer.joblib")
-taxonomy_vectors = joblib.load(MODELS_DIR / "taxonomy_vectors.joblib")
-taxonomy = pd.read_csv(MODELS_DIR / "taxonomy_reference.csv")
+import time as _time
+
+def _load_step(label, fn):
+    t0 = _time.time()
+    print(f"[startup] loading {label}...", flush=True)
+    result = fn()
+    print(f"[startup] loaded {label} in {_time.time() - t0:.2f}s", flush=True)
+    return result
+
+print(f"[startup] MODELS_DIR resolved to: {MODELS_DIR}", flush=True)
+print(f"[startup] MODELS_DIR exists: {MODELS_DIR.exists()}", flush=True)
+if MODELS_DIR.exists():
+    print(f"[startup] MODELS_DIR contents: {list(MODELS_DIR.iterdir())}", flush=True)
+
+nb_model = _load_step("nb_baseline.joblib", lambda: joblib.load(MODELS_DIR / "nb_baseline.joblib"))
+vectorizer = _load_step("tfidf_vectorizer.joblib", lambda: joblib.load(MODELS_DIR / "tfidf_vectorizer.joblib"))
+taxonomy_vectorizer = _load_step("taxonomy_vectorizer.joblib", lambda: joblib.load(MODELS_DIR / "taxonomy_vectorizer.joblib"))
+taxonomy_vectors = _load_step("taxonomy_vectors.joblib", lambda: joblib.load(MODELS_DIR / "taxonomy_vectors.joblib"))
+taxonomy = _load_step("taxonomy_reference.csv", lambda: pd.read_csv(MODELS_DIR / "taxonomy_reference.csv"))
+
+print("[startup] all artifacts loaded, initializing database...", flush=True)
 
 # Suggestions box storage (SQLite) -- create the table if it doesn't exist yet.
 # This runs once at process startup, same reasoning as loading the model
