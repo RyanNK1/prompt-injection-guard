@@ -21,7 +21,7 @@ class PromptCheckRequest(BaseModel):
 
 
 class AttackMatch(BaseModel):
-    """One candidate attack-category match from the Step 4 taxonomy matcher."""
+    """One candidate attack-category match from the taxonomy matcher."""
     attack_type: str
     category: str
     similarity: float

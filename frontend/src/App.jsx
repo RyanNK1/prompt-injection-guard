@@ -124,8 +124,9 @@ function App() {
           </div>
 
           <div className="threshold-note">
-            (flagged at threshold {result.threshold_used}, chosen in Step 3
-            to favor catching more real attacks over fewer false alarms)
+            (flagged at a risk score of {result.threshold_used} or higher —
+            this threshold is set deliberately low to catch more real
+            attacks, at the cost of occasionally flagging borderline text)
           </div>
 
           {result.attack_matches.length > 0 && (
